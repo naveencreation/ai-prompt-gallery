@@ -37,6 +37,22 @@ export async function getImageBySlug(slug: string) {
   return result
 }
 
+export async function getImageByIdPublic(id: string) {
+  const image = await imageRepo.findImageById(id)
+  if (!image || !image.is_published) return null
+
+  const tags = await tagRepo.findTagsByImageId(image.id)
+  return { ...image, tags }
+}
+
+export async function getImagesByTagSlug(
+  tagSlug: string,
+  cursor?: string,
+  limit = PAGE_SIZE
+) {
+  return tagRepo.findImagesByTagSlug(tagSlug, cursor, limit)
+}
+
 export async function getAllImagesAdmin(cursor?: string, limit = PAGE_SIZE) {
   return imageRepo.findAllImages(cursor, limit)
 }

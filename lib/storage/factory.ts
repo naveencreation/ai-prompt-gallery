@@ -15,4 +15,14 @@ export function getStorage(): Storage {
   return instance
 }
 
-export const storage = getStorage()
+export const storage: Storage = {
+  signedUploadUrl(path: string) {
+    return getStorage().signedUploadUrl(path)
+  },
+  publicUrl(storageKey: string) {
+    return getStorage().publicUrl(storageKey)
+  },
+  delete(storageKey: string) {
+    return getStorage().delete(storageKey)
+  },
+}

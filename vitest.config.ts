@@ -15,7 +15,7 @@ export default defineConfig({
     environment: 'node',
     pool: 'forks',
     setupFiles: ['./vitest.setup.ts'],
-    include: ['lib/**/*.test.ts', 'lib/**/*.test.tsx', 'app/**/*.test.ts'],
+    include: ['lib/**/*.test.ts', 'lib/**/*.test.tsx', 'app/**/*.test.ts', 'app/**/*.test.tsx', 'components/**/*.test.ts', 'components/**/*.test.tsx'],
     coverage: {
       reporter: ['text'],
     },

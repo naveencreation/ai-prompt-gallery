@@ -45,23 +45,27 @@ export default function AdminLoginPage() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold tracking-tight">Admin Login</CardTitle>
-        <CardDescription>Sign in to manage the gallery.</CardDescription>
+        <CardTitle className="font-heading text-2xl font-semibold tracking-tight">Welcome back</CardTitle>
+        <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
+              placeholder="admin@example.com"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <span className="text-xs text-muted-foreground cursor-default">Forgot password?</span>
+            </div>
             <Input
               id="password"
               type="password"
@@ -74,6 +78,9 @@ export default function AdminLoginPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Need access? Contact the project owner.
+          </p>
         </form>
       </CardContent>
     </Card>

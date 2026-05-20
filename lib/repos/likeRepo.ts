@@ -1,5 +1,6 @@
 // lib/repos/likeRepo.ts
 import { createAdminClient } from '@/lib/db/client'
+import { logger } from '@/lib/observability/logger'
 
 export async function getLikeCount(imageId: string): Promise<number> {
   const client = createAdminClient()
@@ -29,5 +30,14 @@ export async function incrementLike(imageId: string): Promise<number> {
       .upsert({ image_id: imageId, count: next })
     return next
   }
+
+  // Best-effort: track the event for timeseries
+  const insertRes = await client
+    .from('like_events' as any)
+    .insert({ image_id: imageId } as any)
+  if (insertRes.error) {
+    logger.warn('like_events.insert_failed', { imageId, error: insertRes.error.message })
+  }
+
   return data as number
 }

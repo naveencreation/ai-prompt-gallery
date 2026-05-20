@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
+import { nanoid } from 'nanoid'
 import { storage } from '@/lib/storage/factory'
 import { requireAdminSession } from '@/lib/auth'
 import { HTTP } from '@/lib/constants/http'
 
 const BodySchema = z.object({
-  path: z.string().min(1),
+  path: z.string().min(1).optional(),
+  filename: z.string().min(1).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -21,6 +23,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid body' }, { status: HTTP.BAD_REQUEST })
   }
 
-  const result = await storage.signedUploadUrl(parsed.data.path)
-  return NextResponse.json(result, { status: HTTP.OK })
+  let path = parsed.data.path
+  if (!path) {
+    const ext = parsed.data.filename?.split('.').pop() ?? 'jpg'
+    path = `originals/${nanoid(16)}.${ext}`
+  }
+
+  const { signedUrl } = await storage.signedUploadUrl(path)
+  const publicUrl = storage.publicUrl(path)
+  return NextResponse.json({ signedUrl, path, publicUrl }, { status: HTTP.OK })
 }

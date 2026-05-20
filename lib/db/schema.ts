@@ -19,7 +19,7 @@ export const ImageSchema = z.object({
 })
 
 export const CreateImageSchema = z.object({
-  slug: z.string().min(1).max(100),
+  slug: z.string().min(0).max(100),
   storage_key: z.string().min(1),
   storage_provider: z.enum(['supabase', 'cloudinary']).default('supabase'),
   image_url: z.string().url(),

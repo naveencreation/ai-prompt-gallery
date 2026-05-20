@@ -1,10 +1,18 @@
-export default function UploadPage() {
+import PageHeader from '@/components/admin/PageHeader'
+import UploadForm from '@/components/admin/upload/UploadForm'
+import { findAllTags } from '@/lib/repos/tagRepo'
+
+export default async function UploadPage() {
+  const tags = await findAllTags()
+  const tagNames = tags.map((t) => t.name)
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold tracking-tight mb-4">Upload</h1>
-      <p className="text-muted-foreground">
-        Drag-and-drop upload with metadata form, direct-to-Storage upload, and live preview coming soon.
-      </p>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <PageHeader
+        title="Upload"
+        description="Add a new image to the gallery."
+      />
+      <UploadForm suggestions={tagNames} />
     </div>
   )
 }

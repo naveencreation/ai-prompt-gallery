@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { getTopTags } from '@/lib/services/dashboardService'
 
 export default async function TopTagsCard() {
@@ -28,7 +29,14 @@ export default async function TopTagsCard() {
           </div>
         ))}
         {tags.length === 0 && (
-          <p className="text-sm text-muted-foreground">No tags yet.</p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No tags yet</EmptyTitle>
+              <EmptyDescription>
+                Tags appear here once you publish a few images with them.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
       </CardContent>
     </Card>

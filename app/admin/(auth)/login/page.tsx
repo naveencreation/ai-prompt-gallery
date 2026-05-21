@@ -1,17 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
+import { Spinner } from '@/components/ui/spinner'
 
 export default function AdminLoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialError =
+    searchParams.get('error') === 'forbidden'
+      ? 'This account is not authorized for the admin panel.'
+      : null
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(initialError)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -44,43 +56,49 @@ export default function AdminLoginPage() {
 
   return (
     <Card>
-      <CardHeader className="space-y-1">
-        <CardTitle className="font-heading text-2xl font-semibold tracking-tight">Welcome back</CardTitle>
-        <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
+      <CardHeader className="flex flex-col gap-1">
+        <CardTitle className="font-heading text-2xl font-semibold tracking-tight">
+          Welcome back
+        </CardTitle>
+        <CardDescription>
+          Enter your credentials to access the admin panel.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="admin@example.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <span className="text-xs text-muted-foreground cursor-default">Forgot password?</span>
-            </div>
-            <Input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            Need access? Contact the project owner.
-          </p>
+        <form onSubmit={handleSubmit}>
+          <FieldGroup>
+            <Field data-invalid={!!error || undefined}>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                aria-invalid={!!error || undefined}
+              />
+            </Field>
+            <Field data-invalid={!!error || undefined}>
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                aria-invalid={!!error || undefined}
+              />
+              {error && <FieldDescription>{error}</FieldDescription>}
+            </Field>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Spinner data-icon="inline-start" />}
+              {loading ? 'Signing in…' : 'Sign in'}
+            </Button>
+            <FieldDescription className="text-center">
+              Need access? Contact the project owner.
+            </FieldDescription>
+          </FieldGroup>
         </form>
       </CardContent>
     </Card>

@@ -4,12 +4,18 @@ import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+} from '@/components/ui/field'
+import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
 import UploadDropzone from './UploadDropzone'
 import TagCombobox from './TagCombobox'
@@ -60,7 +66,6 @@ export default function UploadForm({ suggestions }: { suggestions: string[] }) {
 
     setSubmitting(true)
     try {
-      // Step 1: get signed URL
       const sigRes = await fetch('/api/admin/upload-signature', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,7 +77,6 @@ export default function UploadForm({ suggestions }: { suggestions: string[] }) {
       }
       const { signedUrl, path, publicUrl } = await sigRes.json()
 
-      // Step 2: upload to storage
       const putRes = await fetch(signedUrl, {
         method: 'PUT',
         body: fileInfo.file,
@@ -82,7 +86,6 @@ export default function UploadForm({ suggestions }: { suggestions: string[] }) {
         throw new Error('Failed to upload image to storage')
       }
 
-      // Step 3: create image record
       const createRes = await fetch('/api/images', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,79 +120,82 @@ export default function UploadForm({ suggestions }: { suggestions: string[] }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-      <UploadDropzone value={fileInfo} onChange={setFileInfo} />
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <FieldGroup>
+        <UploadDropzone value={fileInfo} onChange={setFileInfo} />
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="prompt">Prompt</Label>
-        <Textarea
-          id="prompt"
-          placeholder="Describe the image prompt..."
-          rows={3}
-          {...register('prompt')}
-        />
-        {errors.prompt && (
-          <p className="text-sm text-destructive">{errors.prompt.message}</p>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="description">Description (optional)</Label>
-        <Textarea
-          id="description"
-          placeholder="Short description for the gallery..."
-          rows={2}
-          {...register('description')}
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="model">Model (optional)</Label>
-        <Input
-          id="model"
-          placeholder="e.g. Midjourney v6, DALL-E 3, Stable Diffusion XL"
-          {...register('model')}
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <Label>Tags</Label>
-        <Controller
-          name="tags"
-          control={control}
-          render={({ field }) => (
-            <TagCombobox
-              value={field.value}
-              onChange={field.onChange}
-              suggestions={suggestions}
-            />
+        <Field data-invalid={!!errors.prompt || undefined}>
+          <FieldLabel htmlFor="prompt">Prompt</FieldLabel>
+          <Textarea
+            id="prompt"
+            placeholder="Describe the image prompt..."
+            rows={3}
+            aria-invalid={!!errors.prompt || undefined}
+            {...register('prompt')}
+          />
+          {errors.prompt && (
+            <FieldDescription>{errors.prompt.message}</FieldDescription>
           )}
-        />
-      </div>
+        </Field>
 
-      <div className="flex items-center gap-3">
-        <Controller
-          name="isPublished"
-          control={control}
-          render={({ field }) => (
-            <Switch
-              checked={field.value}
-              onCheckedChange={field.onChange}
-              id="published"
+        <Field>
+          <FieldLabel htmlFor="description">Description (optional)</FieldLabel>
+          <Textarea
+            id="description"
+            placeholder="Short description for the gallery..."
+            rows={2}
+            {...register('description')}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="model">Model (optional)</FieldLabel>
+          <Input
+            id="model"
+            placeholder="e.g. Midjourney v6, DALL-E 3, Stable Diffusion XL"
+            {...register('model')}
+          />
+        </Field>
+
+        <Field>
+          <FieldLabel>Tags</FieldLabel>
+          <Controller
+            name="tags"
+            control={control}
+            render={({ field }) => (
+              <TagCombobox
+                value={field.value}
+                onChange={field.onChange}
+                suggestions={suggestions}
+              />
+            )}
+          />
+        </Field>
+
+        <FieldSet>
+          <Field orientation="horizontal">
+            <Controller
+              name="isPublished"
+              control={control}
+              render={({ field }) => (
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  id="published"
+                />
+              )}
             />
-          )}
-        />
-        <Label htmlFor="published" className="cursor-pointer">
-          Publish immediately
-        </Label>
-      </div>
+            <FieldLabel htmlFor="published" className="cursor-pointer">
+              Publish immediately
+            </FieldLabel>
+          </Field>
+        </FieldSet>
 
-      <div className="flex items-center gap-3">
         <Button type="submit" disabled={submitting || !fileInfo}>
-          {submitting && <Loader2 className="mr-2 animate-spin" />}
+          {submitting && <Spinner data-icon="inline-start" />}
           {submitting ? 'Uploading…' : 'Upload'}
         </Button>
-      </div>
+      </FieldGroup>
     </form>
   )
 }

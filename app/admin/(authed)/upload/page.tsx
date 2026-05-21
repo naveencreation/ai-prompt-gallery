@@ -7,7 +7,7 @@ export default async function UploadPage() {
   const tagNames = tags.map((t) => t.name)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <PageHeader
         title="Upload"
         description="Add a new image to the gallery."

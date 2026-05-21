@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
 import { storage } from '@/lib/storage/factory'
-import { requireAdminSession } from '@/lib/auth'
+import { adminGuard } from '@/lib/auth'
 import { HTTP } from '@/lib/constants/http'
 
 const BodySchema = z.object({
@@ -11,11 +11,8 @@ const BodySchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
-  try {
-    await requireAdminSession(request)
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: HTTP.UNAUTHORIZED })
-  }
+  const guard = await adminGuard(request)
+  if (guard.response) return guard.response
 
   const body = await request.json().catch(() => null)
   const parsed = BodySchema.safeParse(body)

@@ -10,6 +10,7 @@ const { mockPush, mockRefresh } = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 import AdminLoginPage from './page'

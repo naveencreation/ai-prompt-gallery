@@ -22,6 +22,18 @@ export function createBrowserClient() {
   return createClient<Database>(supabaseUrl, anonKey)
 }
 
+/**
+ * Server-side anon client for reading data covered by an `anon` RLS
+ * policy. Prefer over `createAdminClient` when the query doesn't need
+ * to bypass RLS -- limits the blast radius if the call site is ever
+ * widened (e.g. accepts user input).
+ */
+export function createPublicClient() {
+  return createClient<Database>(supabaseUrl, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+}
+
 /** Route Handler / Server Action client -- reads session from cookies. */
 export async function createRouteClient() {
   const cookieStore = await cookies()

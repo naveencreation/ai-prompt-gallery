@@ -5,6 +5,7 @@ import { LogOut, Settings } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -27,9 +28,7 @@ export default function UserMenu({ email }: { email: string }) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative size-8 rounded-full">
           <Avatar className="size-8">
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
-              {email.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
+            <AvatarFallback>{email.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -41,14 +40,16 @@ export default function UserMenu({ email }: { email: string }) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/admin/settings')}>
-          <Settings data-icon="inline-start" />
-          <span>Settings</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleLogout}>
-          <LogOut data-icon="inline-start" />
-          <span>Log out</span>
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => router.push('/admin/settings')}>
+            <Settings data-icon="inline-start" />
+            <span>Settings</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>
+            <LogOut data-icon="inline-start" />
+            <span>Log out</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -41,10 +41,10 @@ export default function CommandPalette() {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="relative w-full max-w-xs justify-start gap-2 text-sm font-normal text-muted-foreground"
+        className="relative w-full max-w-xs justify-start"
       >
-        <Search />
-        <span className="flex-1 text-left">Search...</span>
+        <Search data-icon="inline-start" />
+        <span className="flex-1 text-left text-muted-foreground">Search...</span>
         <kbd className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded border bg-card px-1.5 py-0.5 text-[10px] font-mono font-medium md:inline-block">
           ⌘K
         </kbd>

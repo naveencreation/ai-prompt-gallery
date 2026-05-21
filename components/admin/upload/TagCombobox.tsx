@@ -51,8 +51,9 @@ export default function TagCombobox({
                 type="button"
                 onClick={() => remove(tag)}
                 className="ml-1 rounded-full outline-none focus:ring-2 focus:ring-ring"
+                aria-label={`Remove ${tag}`}
               >
-                <X className="size-3" />
+                <X />
               </button>
             </Badge>
           ))}
@@ -64,10 +65,10 @@ export default function TagCombobox({
           <Button
             type="button"
             variant="outline"
-            className="w-full justify-start text-sm font-normal text-muted-foreground"
+            className="w-full justify-start"
           >
-            <Check className="mr-2 size-4 opacity-50" />
-            Add tag...
+            <Check data-icon="inline-start" className="opacity-50" />
+            <span className="text-muted-foreground">Add tag...</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0" align="start">
@@ -107,7 +108,7 @@ export default function TagCombobox({
                     className={cn(value.includes(s) && 'opacity-50')}
                   >
                     <Check
-                      className={cn('mr-2 size-4', value.includes(s) ? 'opacity-100' : 'opacity-0')}
+                      className={cn(value.includes(s) ? 'opacity-100' : 'opacity-0')}
                     />
                     {s}
                   </CommandItem>

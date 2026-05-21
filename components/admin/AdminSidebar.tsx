@@ -17,7 +17,7 @@ export default function AdminSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex flex-col size-16 h-full border-r bg-sidebar z-10">
+    <aside className="hidden h-full w-16 flex-col border-r bg-sidebar md:flex">
       <div className="flex h-14 items-center justify-center border-b border-sidebar-border">
         <Link href="/admin/dashboard" className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <Sparkles />

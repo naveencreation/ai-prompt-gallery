@@ -4,12 +4,12 @@ import { NextRequest } from 'next/server'
 const {
   mockGetGalleryPage,
   mockGetImagesByTagSlug,
-  mockRequireAdminSession,
+  mockAdminGuard,
   mockCreateImage,
 } = vi.hoisted(() => ({
   mockGetGalleryPage: vi.fn(),
   mockGetImagesByTagSlug: vi.fn(),
-  mockRequireAdminSession: vi.fn(),
+  mockAdminGuard: vi.fn(),
   mockCreateImage: vi.fn(),
 }))
 
@@ -20,7 +20,7 @@ vi.mock('@/lib/services/imageService', () => ({
 }))
 
 vi.mock('@/lib/auth', () => ({
-  requireAdminSession: mockRequireAdminSession,
+  adminGuard: mockAdminGuard,
 }))
 
 import { GET, POST } from './route'
@@ -60,13 +60,18 @@ describe('POST /api/images', () => {
   })
 
   it('returns 401 when not admin', async () => {
-    mockRequireAdminSession.mockRejectedValue(new Error('Unauthorized'))
+    mockAdminGuard.mockResolvedValue({
+      user: null,
+      response: new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), {
+        status: 401,
+      }),
+    })
     const response = await POST(req('http://localhost/api/images', { image: {}, tags: [] }))
     expect(response.status).toBe(401)
   })
 
   it('creates image when admin', async () => {
-    mockRequireAdminSession.mockResolvedValue({ id: 'admin-1' })
+    mockAdminGuard.mockResolvedValue({ user: { id: 'admin-1' }, response: null })
     mockCreateImage.mockResolvedValue({ id: 'new-1', slug: 'new-slug' })
     const response = await POST(req('http://localhost/api/images', {
       image: {

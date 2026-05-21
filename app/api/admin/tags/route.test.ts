@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextRequest } from 'next/server'
 
-const { mockRequireAdminSession, mockFindAllTags } = vi.hoisted(() => ({
-  mockRequireAdminSession: vi.fn(),
+const { mockAdminGuard, mockFindAllTags } = vi.hoisted(() => ({
+  mockAdminGuard: vi.fn(),
   mockFindAllTags: vi.fn(),
 }))
 
 vi.mock('@/lib/auth', () => ({
-  requireAdminSession: mockRequireAdminSession,
+  adminGuard: mockAdminGuard,
 }))
 
 vi.mock('@/lib/repos/tagRepo', () => ({
@@ -22,14 +22,19 @@ describe('GET /api/admin/tags', () => {
   })
 
   it('returns 401 when not admin', async () => {
-    mockRequireAdminSession.mockRejectedValue(new Error('Unauthorized'))
+    mockAdminGuard.mockResolvedValue({
+      user: null,
+      response: new Response(JSON.stringify({ error: 'UNAUTHORIZED' }), {
+        status: 401,
+      }),
+    })
     const request = new NextRequest(new URL('http://localhost/api/admin/tags'))
     const response = await GET(request)
     expect(response.status).toBe(401)
   })
 
   it('returns tags for admin', async () => {
-    mockRequireAdminSession.mockResolvedValue({ id: 'admin-1' })
+    mockAdminGuard.mockResolvedValue({ user: { id: 'admin-1' }, response: null })
     mockFindAllTags.mockResolvedValue([
       { id: 1, name: 'cyberpunk', slug: 'cyberpunk' },
       { id: 2, name: 'portrait', slug: 'portrait' },

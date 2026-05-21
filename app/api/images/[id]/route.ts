@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { UpdateImageSchema } from '@/lib/db/schema'
 import { getImageByIdPublic } from '@/lib/services/imageService'
-import { requireAdminSession } from '@/lib/auth'
+import { adminGuard } from '@/lib/auth'
 import { rateLimit } from '@/lib/ratelimit/factory'
 import { HTTP } from '@/lib/constants/http'
 import * as imageService from '@/lib/services/imageService'
@@ -37,11 +37,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  try {
-    await requireAdminSession(request)
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: HTTP.UNAUTHORIZED })
-  }
+  const guard = await adminGuard(request)
+  if (guard.response) return guard.response
 
   const ip = getClientIp(request)
   const allowed = await rateLimit.check(`images:update:${ip}`, 20, 60)
@@ -64,11 +61,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  try {
-    await requireAdminSession(request)
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: HTTP.UNAUTHORIZED })
-  }
+  const guard = await adminGuard(request)
+  if (guard.response) return guard.response
 
   const ip = getClientIp(request)
   const allowed = await rateLimit.check(`images:delete:${ip}`, 10, 60)

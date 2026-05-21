@@ -35,6 +35,7 @@ const {
   mockTagRepo: {
     findTagsByImageId: vi.fn(),
     findOrCreateTag: vi.fn(),
+    findOrCreateTags: vi.fn(),
     setImageTags: vi.fn(),
     findImagesByTagSlug: vi.fn(),
   },
@@ -150,7 +151,7 @@ describe('imageService', () => {
     it('creates an image with tags', async () => {
       mockImageRepo.slugExists.mockResolvedValue(false)
       mockImageRepo.insertImage.mockResolvedValue({ id: 'new-id', slug: 'test-image' })
-      mockTagRepo.findOrCreateTag.mockResolvedValue({ id: 1, name: 'art', slug: 'art' })
+      mockTagRepo.findOrCreateTags.mockResolvedValue([{ id: 1, name: 'art', slug: 'art' }])
 
       const input = {
         slug: 'test-image',
@@ -166,7 +167,9 @@ describe('imageService', () => {
       const result = await createImage(input, ['art'])
 
       expect(mockImageRepo.insertImage).toHaveBeenCalled()
-      expect(mockTagRepo.findOrCreateTag).toHaveBeenCalledWith({ name: 'art', slug: 'art' })
+      expect(mockTagRepo.findOrCreateTags).toHaveBeenCalledWith([
+        { name: 'art', slug: 'art' },
+      ])
       expect(mockTagRepo.setImageTags).toHaveBeenCalledWith('new-id', [1])
       expect(mockCache.del).toHaveBeenCalledWith('gallery:first:24')
       expect(mockLogger.info).toHaveBeenCalledWith('image.created', { id: 'new-id', slug: 'test-image' })
@@ -215,7 +218,7 @@ describe('imageService', () => {
 
     it('updates tags when provided', async () => {
       mockImageRepo.updateImage.mockResolvedValue({ id: '1', slug: 's' })
-      mockTagRepo.findOrCreateTag.mockResolvedValue({ id: 2, name: 'new', slug: 'new' })
+      mockTagRepo.findOrCreateTags.mockResolvedValue([{ id: 2, name: 'new', slug: 'new' }])
 
       await updateImage('1', { prompt: 'x' }, ['new'])
 

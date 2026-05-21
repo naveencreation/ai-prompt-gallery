@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { PaginationSchema, CreateImageSchema } from '@/lib/db/schema'
 import { getGalleryPage, getImagesByTagSlug } from '@/lib/services/imageService'
-import { requireAdminSession } from '@/lib/auth'
+import { adminGuard } from '@/lib/auth'
 import { rateLimit } from '@/lib/ratelimit/factory'
 import { HTTP } from '@/lib/constants/http'
 import * as imageService from '@/lib/services/imageService'
@@ -50,11 +50,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    await requireAdminSession(request)
-  } catch {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: HTTP.UNAUTHORIZED })
-  }
+  const guard = await adminGuard(request)
+  if (guard.response) return guard.response
 
   const ip = getClientIp(request)
   const allowed = await rateLimit.check(`images:create:${ip}`, 10, 60)

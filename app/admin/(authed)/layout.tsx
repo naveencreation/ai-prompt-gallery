@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createRouteClient } from '@/lib/db/client'
+import { isAdmin } from '@/lib/auth'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminTopbar from '@/components/admin/AdminTopbar'
 
@@ -12,6 +13,10 @@ export default async function AuthedLayout({ children }: { children: React.React
 
   if (error || !user) {
     redirect('/admin/login')
+  }
+
+  if (!isAdmin(user)) {
+    redirect('/admin/login?error=forbidden')
   }
 
   return (

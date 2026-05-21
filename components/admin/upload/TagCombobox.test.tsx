@@ -27,7 +27,7 @@ describe('TagCombobox', () => {
   it('removes a tag via X button', () => {
     const onChange = vi.fn()
     render(<TagCombobox value={['cyberpunk']} onChange={onChange} suggestions={[]} />)
-    const removeBtn = screen.getByRole('button', { name: '' }) // X button inside badge
+    const removeBtn = screen.getByRole('button', { name: /remove cyberpunk/i })
     fireEvent.click(removeBtn)
     expect(onChange).toHaveBeenCalledWith([])
   })

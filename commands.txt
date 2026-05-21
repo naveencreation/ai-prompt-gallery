@@ -1,0 +1,12 @@
+npm install
+npx supabase login
+npx supabase link --project-ref rxkydkfppcpajzkkwjvg
+npx supabase db push
+
+# Run after db push to surface any RLS / index issues the audit can't see from source:
+npx supabase db advisors
+
+# Mark your admin user (run once, replace the email):
+#   update auth.users
+#      set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'::jsonb
+#    where email = 'you@example.com';

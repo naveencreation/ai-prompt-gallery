@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/db/client'
-import { config } from '@/lib/config'
+import { createPublicClient } from '@/lib/db/client'
 import { HTTP } from '@/lib/constants/http'
 
+/**
+ * Minimal liveness probe. Uses the anon client + the `anon can read
+ * settings` RLS policy so this endpoint does NOT hold service-role
+ * privileges. Body is intentionally minimal -- adapter internals
+ * (cache/rate/storage backends, etc.) used to leak from here and
+ * were removed per audit L-S3.
+ */
 export async function GET() {
-  const client = createAdminClient()
+  const client = createPublicClient()
   const { error } = await client
     .from('settings')
     .select('id', { count: 'exact', head: true })
@@ -14,18 +20,5 @@ export async function GET() {
     return NextResponse.json({ ok: false }, { status: HTTP.INTERNAL_SERVER_ERROR })
   }
 
-  return NextResponse.json(
-    {
-      ok: true,
-      adapters: {
-        cache: config.cache,
-        rate: config.rate,
-        storage: config.storage,
-        errors: config.errors,
-        logs: config.logs,
-        search: config.search,
-      },
-    },
-    { status: HTTP.OK }
-  )
+  return NextResponse.json({ ok: true }, { status: HTTP.OK })
 }

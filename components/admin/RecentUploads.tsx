@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { getRecentUploads } from '@/lib/services/dashboardService'
 
 function relativeTime(iso: string): string {
@@ -35,7 +36,7 @@ export default async function RecentUploads() {
               <p className="truncate text-xs text-muted-foreground">{u.prompt}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Badge variant={u.isPublished ? 'default' : 'secondary'} className="text-[10px] capitalize">
+              <Badge variant={u.isPublished ? 'default' : 'secondary'} className="capitalize">
                 {u.isPublished ? 'published' : 'draft'}
               </Badge>
               <span className="text-xs text-muted-foreground">{relativeTime(u.createdAt)}</span>
@@ -43,7 +44,14 @@ export default async function RecentUploads() {
           </div>
         ))}
         {uploads.length === 0 && (
-          <p className="text-sm text-muted-foreground">No uploads yet.</p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No uploads yet</EmptyTitle>
+              <EmptyDescription>
+                Once you add your first image, it&apos;ll show up here.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
       </CardContent>
     </Card>

@@ -44,7 +44,7 @@ function UploadsSkeleton() {
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="Dashboard"
         description="Overview of your gallery performance."

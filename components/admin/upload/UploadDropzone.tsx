@@ -85,7 +85,7 @@ export default function UploadDropzone({
               Replace
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={clear}>
-              <X />
+              <X data-icon="inline-start" />
             </Button>
           </div>
         </div>
@@ -111,8 +111,8 @@ export default function UploadDropzone({
         dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:bg-muted/50'
       )}
     >
-      <div className="flex size-12 items-center justify-center rounded-full bg-muted">
-        <Upload className="text-muted-foreground" />
+      <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Upload />
       </div>
       <div className="text-center text-sm text-muted-foreground">
         <span className="font-medium text-foreground">Click to upload</span> or drag and drop

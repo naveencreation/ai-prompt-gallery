@@ -70,8 +70,8 @@ export async function createImage(input: CreateImage, tagNames: string[] = []) {
   logger.info('image.created', { id: image.id, slug: image.slug })
 
   if (tagNames.length > 0) {
-    const tags = await Promise.all(
-      tagNames.map((name) => tagRepo.findOrCreateTag({ name, slug: generateSlug(name) }))
+    const tags = await tagRepo.findOrCreateTags(
+      tagNames.map((name) => ({ name, slug: generateSlug(name) }))
     )
     await tagRepo.setImageTags(image.id, tags.map((t) => t.id))
   }
@@ -90,8 +90,8 @@ export async function updateImage(
   logger.info('image.updated', { id })
 
   if (tagNames !== undefined) {
-    const tags = await Promise.all(
-      tagNames.map((name) => tagRepo.findOrCreateTag({ name, slug: generateSlug(name) }))
+    const tags = await tagRepo.findOrCreateTags(
+      tagNames.map((name) => ({ name, slug: generateSlug(name) }))
     )
     await tagRepo.setImageTags(id, tags.map((t) => t.id))
   }

@@ -1,74 +1,63 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import PageHeader from '@/components/admin/PageHeader'
 import StatsRow from '@/components/admin/StatsRow'
-import LikesChartCard from '@/components/admin/LikesChartCard'
+import LikesOverviewCard from '@/components/admin/LikesOverviewCard'
+import PublishRatioCard from '@/components/admin/PublishRatioCard'
 import TopTagsCard from '@/components/admin/TopTagsCard'
+import GallerySummaryCard from '@/components/admin/GallerySummaryCard'
 import RecentUploads from '@/components/admin/RecentUploads'
-
-function CardSkeleton() {
-  return (
-    <div className="flex flex-col gap-3 rounded-xl border p-6">
-      <Skeleton className="h-5 w-1/2" />
-      <Skeleton className="h-4 w-1/3" />
-      <Skeleton className="h-[140px] w-full" />
-    </div>
-  )
-}
-
-function StatsSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex flex-col gap-3 rounded-xl border p-6">
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-8 w-1/3" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function UploadsSkeleton() {
-  return (
-    <div className="flex flex-col gap-3 rounded-xl border p-6">
-      <Skeleton className="h-5 w-1/3" />
-      <Skeleton className="h-4 w-1/2" />
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-10 w-full" />
-      ))}
-    </div>
-  )
-}
+import DashboardDateRange from '@/components/admin/dashboard/DashboardDateRange'
+import {
+  StatsSkeleton,
+  OverviewSkeleton,
+  SideCardSkeleton,
+  TagsSkeleton,
+  ListCardSkeleton,
+} from '@/components/admin/dashboard/DashboardSkeletons'
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full flex-col gap-8">
       <PageHeader
         title="Dashboard"
         description="Overview of your gallery performance."
-        actions={<Button>New upload</Button>}
+        actions={
+          <>
+            <DashboardDateRange />
+            <Button asChild>
+              <Link href="/admin/upload">New upload</Link>
+            </Button>
+          </>
+        }
       />
 
       <Suspense fallback={<StatsSkeleton />}>
         <StatsRow />
       </Suspense>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Suspense fallback={<CardSkeleton />}>
-          <LikesChartCard />
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Suspense fallback={<OverviewSkeleton />}>
+          <LikesOverviewCard />
         </Suspense>
-        <Suspense fallback={<CardSkeleton />}>
-          <TopTagsCard />
+        <Suspense fallback={<SideCardSkeleton />}>
+          <PublishRatioCard />
         </Suspense>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Suspense fallback={<UploadsSkeleton />}>
-          <RecentUploads />
+        <Suspense fallback={<TagsSkeleton />}>
+          <TopTagsCard />
+        </Suspense>
+        <Suspense fallback={<ListCardSkeleton />}>
+          <GallerySummaryCard />
         </Suspense>
       </div>
+
+      <Suspense fallback={<ListCardSkeleton />}>
+        <RecentUploads />
+      </Suspense>
     </div>
   )
 }

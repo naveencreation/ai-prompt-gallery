@@ -1,5 +1,6 @@
 import { config } from '@/lib/config'
 import type { Storage } from './index'
+import { CloudinaryStorage } from './cloudinary'
 import { SupabaseStorage } from './supabase'
 
 let instance: Storage | null = null
@@ -8,8 +9,10 @@ export function getStorage(): Storage {
   if (!instance) {
     if (config.storage === 'supabase') {
       instance = new SupabaseStorage()
+    } else if (config.storage === 'cloudinary') {
+      instance = new CloudinaryStorage()
     } else {
-      throw new Error('Cloudinary storage not yet implemented')
+      throw new Error(`Unknown storage provider: ${config.storage}`)
     }
   }
   return instance

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     path = `originals/${nanoid(16)}.${ext}`
   }
 
-  const { signedUrl } = await storage.signedUploadUrl(path)
+  const result = await storage.signedUploadUrl(path)
   const publicUrl = storage.publicUrl(path)
-  return NextResponse.json({ signedUrl, path, publicUrl }, { status: HTTP.OK })
+  return NextResponse.json({ ...result, publicUrl }, { status: HTTP.OK })
 }

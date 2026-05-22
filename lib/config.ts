@@ -24,7 +24,10 @@ const env = z
 export const config = {
   cache: env.UPSTASH_REDIS_REST_URL ? 'redis' : 'memory',
   rate: env.UPSTASH_REDIS_REST_URL ? 'redis' : 'memory',
-  storage: env.CLOUDINARY_CLOUD_NAME ? 'cloudinary' : 'supabase',
+  storage:
+    env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET
+      ? 'cloudinary'
+      : 'supabase',
   errors: env.SENTRY_DSN ? 'sentry' : 'console',
   logs: env.AXIOM_TOKEN ? 'axiom' : 'console',
   search: env.MEILISEARCH_HOST ? 'meili' : 'postgres',

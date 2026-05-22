@@ -70,16 +70,35 @@ export default function UploadForm({ suggestions }: { suggestions: string[] }) {
         const body = await sigRes.json().catch(() => null)
         throw new Error(body?.error ?? 'Failed to get upload URL')
       }
-      const { signedUrl, path, publicUrl } = await sigRes.json()
+      const { signedUrl, path, publicUrl, fields, storageProvider } = await sigRes.json()
 
       // Step 2: upload to storage
-      const putRes = await fetch(signedUrl, {
-        method: 'PUT',
-        body: fileInfo.file,
-        headers: { 'Content-Type': fileInfo.file.type },
-      })
-      if (!putRes.ok) {
-        throw new Error('Failed to upload image to storage')
+      let uploadedPublicUrl = publicUrl as string
+      if (fields) {
+        const formData = new FormData()
+        for (const [key, value] of Object.entries(fields as Record<string, string>)) {
+          formData.append(key, value)
+        }
+        formData.append('file', fileInfo.file)
+
+        const uploadRes = await fetch(signedUrl, {
+          method: 'POST',
+          body: formData,
+        })
+        if (!uploadRes.ok) {
+          throw new Error('Failed to upload image to storage')
+        }
+        const uploadBody = await uploadRes.json().catch(() => null)
+        uploadedPublicUrl = uploadBody?.secure_url ?? uploadBody?.url ?? publicUrl
+      } else {
+        const putRes = await fetch(signedUrl, {
+          method: 'PUT',
+          body: fileInfo.file,
+          headers: { 'Content-Type': fileInfo.file.type },
+        })
+        if (!putRes.ok) {
+          throw new Error('Failed to upload image to storage')
+        }
       }
 
       // Step 3: create image record
@@ -90,7 +109,8 @@ export default function UploadForm({ suggestions }: { suggestions: string[] }) {
           image: {
             slug: '',
             storage_key: path,
-            image_url: publicUrl,
+            storage_provider: storageProvider ?? 'supabase',
+            image_url: uploadedPublicUrl,
             width: fileInfo.width,
             height: fileInfo.height,
             prompt: data.prompt,

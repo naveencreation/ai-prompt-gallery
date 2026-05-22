@@ -1,6 +1,8 @@
 export interface SignedUploadResult {
   signedUrl: string
   path: string
+  storageProvider: 'supabase' | 'cloudinary'
+  fields?: Record<string, string>
 }
 
 export interface Storage {

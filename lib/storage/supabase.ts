@@ -10,7 +10,7 @@ export class SupabaseStorage implements Storage {
       .from(BUCKET)
       .createSignedUploadUrl(path)
     if (error || !data) throw new Error(`Storage sign error: ${error?.message}`)
-    return { signedUrl: data.signedUrl, path: data.path }
+    return { signedUrl: data.signedUrl, path: data.path, storageProvider: 'supabase' }
   }
 
   publicUrl(storageKey: string): string {

@@ -9,6 +9,32 @@ import UploadForm from './UploadForm'
 
 const mockFetch = vi.fn()
 
+vi.mock('./UploadDropzone', () => ({
+  default: ({ onChange }: { onChange: (value: unknown) => void }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onChange({
+          file: new File(['image-bytes'], 'test.png', { type: 'image/png' }),
+          width: 640,
+          height: 480,
+          previewUrl: 'blob:test',
+        })
+      }
+    >
+      Mock file picker
+    </button>
+  ),
+}))
+
+vi.mock('./TagCombobox', () => ({
+  default: ({ value, onChange }: { value: string[]; onChange: (value: string[]) => void }) => (
+    <button type="button" onClick={() => onChange([...(value ?? []), 'cyberpunk'])}>
+      Mock tag picker
+    </button>
+  ),
+}))
+
 describe('UploadForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -23,27 +49,49 @@ describe('UploadForm', () => {
     expect(screen.getByRole('button', { name: /upload/i })).toBeDisabled()
   })
 
-  it('calls upload-signature, PUT, and POST on submit', async () => {
+  it('uploads to cloudinary and creates the image record', async () => {
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ signedUrl: 'https://signed.url', path: 'originals/abc.jpg', publicUrl: 'https://public.url/abc.jpg' }),
+        json: async () => ({
+          signedUrl: 'https://api.cloudinary.com/v1_1/demo/image/upload',
+          path: 'originals/abc.jpg',
+          publicUrl: 'https://res.cloudinary.com/demo/image/upload/originals/abc.jpg',
+          storageProvider: 'cloudinary',
+          fields: {
+            api_key: 'demo-key',
+            public_id: 'originals/abc.jpg',
+            timestamp: '1234567890',
+            signature: 'demo-signature',
+          },
+        }),
       })
-      .mockResolvedValueOnce({ ok: true })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ secure_url: 'https://res.cloudinary.com/demo/image/upload/test-uploaded.jpg' }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ id: 'img-1' }) })
 
     render(<UploadForm suggestions={['cyberpunk']} />)
 
-    // Fill prompt
     fireEvent.change(screen.getByLabelText(/prompt/i), { target: { value: 'A cyberpunk city' } })
+    fireEvent.click(screen.getByRole('button', { name: /mock file picker/i }))
+    fireEvent.click(screen.getByRole('button', { name: /upload/i }))
 
-    // Simulate file selection by setting state indirectly (we can't test dropzone easily in jsdom)
-    // Instead, verify the form structure exists
-    const submitBtn = screen.getByRole('button', { name: /upload/i })
-    expect(submitBtn).toBeDisabled() // still disabled because no file
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3))
 
-    // We can't easily test the full upload flow without mocking the dropzone file state,
-    // but the component structure is verified above.
+    const uploadCall = mockFetch.mock.calls[1]
+    expect(uploadCall[0]).toBe('https://api.cloudinary.com/v1_1/demo/image/upload')
+    expect(uploadCall[1]?.method).toBe('POST')
+
+    const uploadBody = uploadCall[1]?.body as FormData
+    expect(uploadBody.get('api_key')).toBe('demo-key')
+    expect(uploadBody.get('public_id')).toBe('originals/abc.jpg')
+    expect(uploadBody.get('signature')).toBe('demo-signature')
+    expect(uploadBody.get('file')).toBeInstanceOf(File)
+
+    const createCall = mockFetch.mock.calls[2]
+    const payload = JSON.parse(createCall[1]?.body as string)
+    expect(payload.image.storage_provider).toBe('cloudinary')
+    expect(payload.image.image_url).toBe('https://res.cloudinary.com/demo/image/upload/test-uploaded.jpg')
+    expect(payload.image.storage_key).toBe('originals/abc.jpg')
   })
 
   it('shows toast error when signed URL request fails', async () => {

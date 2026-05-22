@@ -4,3 +4,6 @@ export interface Cache {
   del(key: string): Promise<void>
   incr(key: string, ttlSeconds?: number): Promise<number>
 }
+
+// Backwards-compatible re-export: some modules import from '@/lib/cache'
+export { cache } from './factory'

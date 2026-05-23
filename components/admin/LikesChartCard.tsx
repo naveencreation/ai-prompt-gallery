@@ -11,10 +11,8 @@ export default async function LikesChartCard() {
         <CardTitle>Likes over last 28 days</CardTitle>
         <CardDescription>Total likes received per day.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[200px] w-full">
-          <LikesChart data={data} />
-        </div>
+      <CardContent className="space-y-4">
+        <LikesChart data={data} />
       </CardContent>
     </Card>
   )

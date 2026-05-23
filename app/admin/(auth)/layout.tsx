@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
         <span className="text-xl font-bold tracking-tight">Prompt Gallery</span>
       </div>
-      <div className="w-full max-w-sm">{children}</div>
+      <div className="w-full max-w-5xl">{children}</div>
     </div>
   )
 }

@@ -141,16 +141,19 @@ export default function UploadForm({ suggestions }: { suggestions: string[] }) {
       <UploadDropzone value={fileInfo} onChange={setFileInfo} />
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="prompt">Prompt</Label>
+        <Label htmlFor="prompt" className="text-base font-semibold">Prompt</Label>
         <Textarea
           id="prompt"
           placeholder="Describe the image prompt..."
           rows={3}
+          aria-invalid={!!errors.prompt}
+          aria-describedby={errors.prompt ? 'prompt-error' : undefined}
           {...register('prompt')}
         />
         {errors.prompt && (
-          <p className="text-sm text-destructive">{errors.prompt.message}</p>
+          <p id="prompt-error" className="text-sm text-destructive font-medium" role="alert">{errors.prompt.message}</p>
         )}
+        <p className="text-xs text-muted-foreground">Required. Be specific about the subject, style, and composition.</p>
       </div>
 
       <div className="flex flex-col gap-2">

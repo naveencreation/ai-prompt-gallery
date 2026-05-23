@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import PageContainer from '@/components/admin/PageContainer'
 import PageHeader from '@/components/admin/PageHeader'
 import StatsRow from '@/components/admin/StatsRow'
 import LikesChartCard from '@/components/admin/LikesChartCard'
@@ -44,7 +45,12 @@ function UploadsSkeleton() {
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
+    <PageContainer
+      breadcrumbs={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Dashboard' },
+      ]}
+    >
       <PageHeader
         title="Dashboard"
         description="Overview of your gallery performance."
@@ -69,6 +75,6 @@ export default function DashboardPage() {
           <RecentUploads />
         </Suspense>
       </div>
-    </div>
+    </PageContainer>
   )
 }

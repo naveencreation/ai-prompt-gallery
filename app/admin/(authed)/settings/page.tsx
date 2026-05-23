@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 import { useState, useEffect } from 'react'
+import PageContainer from '@/components/admin/PageContainer'
+import PageHeader from '@/components/admin/PageHeader'
 import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
@@ -39,79 +41,111 @@ export default function SettingsPage() {
   }, [])
 
   async function saveField(updates: any) {
-    const res = await fetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(updates), headers: { 'Content-Type': 'application/json' } })
-    if (res.ok) {
-      const data = await res.json()
-      setMaintenance(!!data.maintenance_mode)
-      setFeatured(data.featured_image_id ?? null)
+    try {
+      const res = await fetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(updates), headers: { 'Content-Type': 'application/json' } })
+      if (res.ok) {
+        const data = await res.json()
+        setMaintenance(!!data.maintenance_mode)
+        setFeatured(data.featured_image_id ?? null)
+      } else {
+        throw new Error('Failed to save')
+      }
+    } catch (err) {
+      console.error('Save error:', err)
     }
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+    <PageContainer
+      breadcrumbs={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Settings' },
+      ]}
+    >
+      <PageHeader
+        title="Settings"
+        description="Manage site-wide settings and preferences."
+      />
 
-      <Card className="p-4">
+      <Card className="p-6 space-y-4 border-l-4 border-l-primary">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-medium">Maintenance Mode</h3>
-            <p className="text-sm text-muted-foreground">Toggle site-wide maintenance mode (middleware uses this).</p>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold">Maintenance Mode</h3>
+            <p className="text-sm text-muted-foreground mt-1">Toggle site-wide maintenance mode. When enabled, users will see a maintenance notice.</p>
           </div>
-          <Switch checked={maintenance} onCheckedChange={(v) => { setMaintenance(!!v); saveField({ maintenance_mode: !!v }) }} />
+          <Switch 
+            checked={maintenance} 
+            onCheckedChange={(v) => { setMaintenance(!!v); saveField({ maintenance_mode: !!v }) }}
+            aria-label="Toggle maintenance mode"
+          />
         </div>
       </Card>
 
-      <Card className="p-4">
+      <Card className="p-6 space-y-4 border-l-4 border-l-blue-500">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-medium">Featured Image</h3>
-            <p className="text-sm text-muted-foreground">Pick an image to feature across the site.</p>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold">Featured Image</h3>
+            <p className="text-sm text-muted-foreground mt-1">Select an image to highlight across the site.</p>
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button>{featured ? 'Change' : 'Select'}</Button>
+              <Button variant="outline" size="sm">{featured ? 'Change' : 'Select'}</Button>
             </PopoverTrigger>
-            <PopoverContent>
+            <PopoverContent className="w-72">
               <PopoverHeader>
                 <PopoverTitle>Select Featured Image</PopoverTitle>
-                <PopoverDescription>Search images by prompt or id</PopoverDescription>
+                <PopoverDescription className="text-xs">Search by prompt or ID</PopoverDescription>
               </PopoverHeader>
-              <div className="pt-2">
-                <InputGroup>
-                  <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search images" />
-                </InputGroup>
-                <Command className="mt-2">
-                  <CommandInput value={query} onValueChange={(v: string) => setQuery(v)} />
+              <div className="space-y-3 pt-4">
+                <Input 
+                  value={query} 
+                  onChange={(e) => setQuery(e.target.value)} 
+                  placeholder="Search images..." 
+                  className="text-sm"
+                />
+                <Command className="rounded-lg border">
+                  <CommandInput 
+                    value={query} 
+                    onValueChange={(v: string) => setQuery(v)}
+                    placeholder="Filter..."
+                  />
                   <CommandList>
                     {images.filter((img) => !query || (img.prompt && img.prompt.toLowerCase().includes(query.toLowerCase()))).slice(0, 20).map((img) => (
-                      <CommandItem key={img.id} onSelect={() => { setFeatured(img.id); saveField({ featured_image_id: img.id }) }}>{img.prompt || img.id}</CommandItem>
+                      <CommandItem 
+                        key={img.id} 
+                        onSelect={() => { setFeatured(img.id); saveField({ featured_image_id: img.id }) }}
+                        className="text-sm"
+                      >
+                        {img.prompt || img.id}
+                      </CommandItem>
                     ))}
-                    {images.filter((img) => !query || (img.prompt && img.prompt.toLowerCase().includes(query.toLowerCase()))).length === 0 && <CommandEmpty>No images</CommandEmpty>}
+                    {images.filter((img) => !query || (img.prompt && img.prompt.toLowerCase().includes(query.toLowerCase()))).length === 0 && <CommandEmpty>No images found</CommandEmpty>}
                   </CommandList>
                 </Command>
               </div>
             </PopoverContent>
           </Popover>
         </div>
-        {featured && <div className="mt-4">Selected: <Badge>{featured}</Badge></div>}
+        {featured && (
+          <div className="mt-3 p-3 rounded-lg bg-muted/50">
+            <p className="text-xs text-muted-foreground">Selected image:</p>
+            <Badge className="mt-2 text-xs truncate max-w-xs">{featured}</Badge>
+          </div>
+        )}
       </Card>
 
-      <Card className="p-4">
+      <Card className="p-6 space-y-4 border-l-4 border-l-green-500">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-medium">Infrastructure</h3>
-            <p className="text-sm text-muted-foreground">Adapter and integrations status.</p>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold">Infrastructure</h3>
+            <p className="text-sm text-muted-foreground mt-1">View storage adapter and integration status.</p>
           </div>
-          <div>
-            <Badge>Supabase</Badge>
-          </div>
+          <Badge variant="outline" className="font-medium">Supabase</Badge>
         </div>
-        <div className="mt-4">
-          <Button onClick={async () => { await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret: process.env.NEXT_PUBLIC_REVALIDATE_SECRET, tag: 'sitemap' }) }) }}>Rebuild sitemap</Button>
-        </div>
+        <Button variant="secondary" size="sm" onClick={async () => { await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret: process.env.NEXT_PUBLIC_REVALIDATE_SECRET, tag: 'sitemap' }) }) }}>Revalidate sitemap</Button>
       </Card>
 
       {loading && <div className="text-sm text-muted-foreground">Loading...</div>}
-    </div>
+    </PageContainer>
   )
 }

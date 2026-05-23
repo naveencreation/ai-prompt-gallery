@@ -34,7 +34,7 @@ describe('AdminLoginPage', () => {
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'bad' },
     })
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     await waitFor(() => {
       expect(screen.getByText('Bad creds')).toBeInTheDocument()
@@ -55,7 +55,7 @@ describe('AdminLoginPage', () => {
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'secret' },
     })
-    fireEvent.click(screen.getByRole('button', { name: /sign in/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/admin/dashboard')

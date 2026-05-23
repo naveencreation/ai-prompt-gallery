@@ -13,20 +13,27 @@ export default async function TopTagsCard() {
         <CardDescription>Most used tags across all images.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {tags.map((tag) => (
-          <div key={tag.slug} className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">{tag.name}</span>
-              <Badge variant="secondary" className="text-xs">{tag.count}</Badge>
+        {tags.map((tag) => {
+          const percentage = (tag.count / max) * 100
+          return (
+            <div key={tag.slug} className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{tag.name}</span>
+                <Badge variant="secondary" className="text-xs font-semibold">{tag.count}</Badge>
+              </div>
+              <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-300"
+                  style={{ width: `${percentage}%` }}
+                  role="progressbar"
+                  aria-valuenow={Math.round(percentage)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                />
+              </div>
             </div>
-            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${(tag.count / max) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          )
+        })}
         {tags.length === 0 && (
           <p className="text-sm text-muted-foreground">No tags yet.</p>
         )}

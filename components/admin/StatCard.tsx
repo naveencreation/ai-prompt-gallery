@@ -18,7 +18,7 @@ export default function StatCard({
   const Icon = isPositive ? TrendingUp : TrendingDown
 
   return (
-    <Card className="transition-shadow hover:shadow-sm">
+    <Card className="transition-all hover:shadow-md hover:border-primary/20 dark:hover:border-primary/30">
       <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {label}
@@ -26,18 +26,18 @@ export default function StatCard({
         <Badge
           variant="outline"
           className={cn(
-            'gap-1 text-xs font-medium border-transparent',
+            'gap-1 text-xs font-semibold border-transparent shrink-0',
             isPositive
-              ? 'bg-success text-success-foreground'
-              : 'bg-destructive/10 text-destructive'
+              ? 'bg-success/15 text-success dark:bg-success/25'
+              : 'bg-destructive/15 text-destructive dark:bg-destructive/25'
           )}
         >
-          <Icon />
+          <Icon className="h-3 w-3" />
           {delta}
         </Badge>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold tracking-tight">{value}</div>
+        <div className="text-3xl font-bold tracking-tighter">{value}</div>
       </CardContent>
     </Card>
   )

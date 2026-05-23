@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import PageContainer from '@/components/admin/PageContainer'
 import PageHeader from '@/components/admin/PageHeader'
 import ManageImagesTable from '@/components/admin/ManageImagesTable'
 import { PAGE_SIZE } from '@/lib/constants/limits'
@@ -39,7 +40,12 @@ export default async function ManagePage({ searchParams }: { searchParams?: Sear
   const nextStack = [...stack, cursor ?? '__first__']
 
   return (
-    <div className="space-y-6">
+    <PageContainer
+      breadcrumbs={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Manage' },
+      ]}
+    >
       <PageHeader
         title="Manage"
         description="Review, edit, and remove gallery images."
@@ -72,6 +78,6 @@ export default async function ManagePage({ searchParams }: { searchParams?: Sear
           nextHref={images.nextCursor ? buildHref(images.nextCursor, nextStack) : null}
         />
       )}
-    </div>
+    </PageContainer>
   )
 }

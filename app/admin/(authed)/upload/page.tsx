@@ -1,3 +1,4 @@
+import PageContainer from '@/components/admin/PageContainer'
 import PageHeader from '@/components/admin/PageHeader'
 import UploadForm from '@/components/admin/upload/UploadForm'
 import { findAllTags } from '@/lib/repos/tagRepo'
@@ -7,12 +8,18 @@ export default async function UploadPage() {
   const tagNames = tags.map((t) => t.name)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <PageContainer
+      breadcrumbs={[
+        { label: 'Admin', href: '/admin/dashboard' },
+        { label: 'Upload' },
+      ]}
+      className="max-w-2xl"
+    >
       <PageHeader
         title="Upload"
         description="Add a new image to the gallery."
       />
       <UploadForm suggestions={tagNames} />
-    </div>
+    </PageContainer>
   )
 }

@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { getRecentUploads } from '@/lib/services/dashboardService'
 
-function relativeTime(iso: string): string {
+export function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const mins = Math.floor(diff / 60000)
   const hrs = Math.floor(diff / 3600000)
@@ -28,22 +28,25 @@ export default async function RecentUploads() {
         {uploads.map((u) => (
           <div
             key={u.id}
-            className="flex items-center justify-between gap-4 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+            className="flex items-center justify-between gap-4 rounded-lg border p-3 transition-all hover:bg-muted/60 hover:shadow-sm hover:border-primary/30 dark:hover:border-primary/40"
           >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{u.slug}</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-foreground">{u.slug}</p>
               <p className="truncate text-xs text-muted-foreground">{u.prompt}</p>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <Badge variant={u.isPublished ? 'default' : 'secondary'} className="text-[10px] capitalize">
+            <div className="flex shrink-0 items-center gap-3">
+              <Badge variant={u.isPublished ? 'default' : 'secondary'} className="text-xs font-semibold capitalize shrink-0">
                 {u.isPublished ? 'published' : 'draft'}
               </Badge>
-              <span className="text-xs text-muted-foreground">{relativeTime(u.createdAt)}</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">{relativeTime(u.createdAt)}</span>
             </div>
           </div>
         ))}
         {uploads.length === 0 && (
-          <p className="text-sm text-muted-foreground">No uploads yet.</p>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <p className="text-sm font-medium text-muted-foreground">No uploads yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Get started by uploading your first image</p>
+          </div>
         )}
       </CardContent>
     </Card>

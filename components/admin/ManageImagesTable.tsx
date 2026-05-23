@@ -201,7 +201,12 @@ export default function ManageImagesTable({
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="size-8">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="size-8" 
+                        aria-label={`Actions for ${image.slug}`}
+                      >
                         <MoreHorizontal className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -263,15 +268,22 @@ export default function ManageImagesTable({
         <DialogContent className="sm:max-w-2xl">
           <form onSubmit={handleSave}>
             <DialogHeader>
-              <DialogTitle>Edit image</DialogTitle>
+              <DialogTitle className="text-xl font-semibold">Edit image</DialogTitle>
               <DialogDescription>Update the image metadata shown across the gallery.</DialogDescription>
             </DialogHeader>
 
             {editingImage && editState ? (
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-6 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="prompt">Prompt</Label>
-                  <Textarea id="prompt" value={editState.prompt} onChange={(event) => setEditState((current) => current ? { ...current, prompt: event.target.value } : current)} rows={4} required />
+                  <Label htmlFor="prompt" className="text-base font-semibold">Prompt</Label>
+                  <Textarea 
+                    id="prompt" 
+                    value={editState.prompt} 
+                    onChange={(event) => setEditState((current) => current ? { ...current, prompt: event.target.value } : current)} 
+                    rows={4} 
+                    required
+                    className="resize-none"
+                  />
                 </div>
 
                 <div className="grid gap-2">

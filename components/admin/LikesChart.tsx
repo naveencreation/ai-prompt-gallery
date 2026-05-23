@@ -58,7 +58,22 @@ export default function LikesChart({ data }: { data: LikesPoint[] }) {
           />
           <ChartTooltip
             cursor={false}
-            content={<ChartTooltipContent indicator="line" />}
+            content={
+              <ChartTooltipContent
+                labelFormatter={(value) => {
+                  try {
+                    return new Date(value).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  } catch {
+                    return value
+                  }
+                }}
+                indicator="line"
+              />
+            }
           />
           <Area
             dataKey="likes"

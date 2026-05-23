@@ -2,19 +2,22 @@
 
 import * as React from 'react'
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
+import { RefreshCw } from 'lucide-react'
 import PageContainer from '@/components/admin/PageContainer'
 import PageHeader from '@/components/admin/PageHeader'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription } from '@/components/ui/popover'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Command, CommandInput, CommandList, CommandItem, CommandEmpty } from '@/components/ui/command'
-import { InputGroup } from '@/components/ui/input-group'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [maintenance, setMaintenance] = useState(false)
   const [featured, setFeatured] = useState<string | null>(null)
   const [images, setImages] = useState<any[]>([])
@@ -22,37 +25,89 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function load() {
-      const res = await fetch('/api/admin/settings')
-      if (res.ok) {
-        const data = await res.json()
-        setMaintenance(!!data.maintenance_mode)
-        setFeatured(data.featured_image_id ?? null)
-      }
+      try {
+        const res = await fetch('/api/admin/settings')
+        if (res.ok) {
+          const data = await res.json()
+          setMaintenance(!!data.maintenance_mode)
+          setFeatured(data.featured_image_id ?? null)
+        } else {
+          toast.error('Failed to load settings')
+        }
 
-      const imgs = await fetch('/api/images?limit=50')
-      if (imgs.ok) {
-        const body = await imgs.json()
-        setImages(body?.rows ?? [])
+        const imgs = await fetch('/api/images?limit=50')
+        if (imgs.ok) {
+          const body = await imgs.json()
+          setImages(body?.rows ?? [])
+        } else {
+          toast.error('Failed to load images')
+        }
+      } catch (err) {
+        toast.error('An error occurred while loading settings')
+        console.error('Load error:', err)
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
     load()
   }, [])
 
   async function saveField(updates: any) {
+    setSaving(true)
     try {
-      const res = await fetch('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(updates), headers: { 'Content-Type': 'application/json' } })
+      const res = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+        headers: { 'Content-Type': 'application/json' },
+      })
       if (res.ok) {
         const data = await res.json()
         setMaintenance(!!data.maintenance_mode)
         setFeatured(data.featured_image_id ?? null)
+        toast.success('Settings saved successfully')
       } else {
-        throw new Error('Failed to save')
+        const errorData = await res.json().catch(() => ({}))
+        toast.error(errorData?.error || 'Failed to save settings')
       }
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'An unknown error occurred'
+      toast.error(`Save error: ${message}`)
       console.error('Save error:', err)
+    } finally {
+      setSaving(false)
     }
+  }
+
+  async function handleRevalidate() {
+    try {
+      const res = await fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: process.env.NEXT_PUBLIC_REVALIDATE_SECRET, tag: 'sitemap' }),
+      })
+      if (res.ok) {
+        toast.success('Sitemap revalidated successfully')
+      } else {
+        toast.error('Failed to revalidate sitemap')
+      }
+    } catch (err) {
+      toast.error('An error occurred while revalidating')
+      console.error('Revalidate error:', err)
+    }
+  }
+
+  if (loading) {
+    return (
+      <PageContainer
+        breadcrumbs={[
+          { label: 'Admin', href: '/admin/dashboard' },
+          { label: 'Settings' },
+        ]}
+      >
+        <PageHeader title="Settings" description="Manage site-wide settings and preferences." />
+        <div className="text-sm text-muted-foreground py-8">Loading settings...</div>
+      </PageContainer>
+    )
   }
 
   return (
@@ -62,90 +117,150 @@ export default function SettingsPage() {
         { label: 'Settings' },
       ]}
     >
-      <PageHeader
-        title="Settings"
-        description="Manage site-wide settings and preferences."
-      />
+      <PageHeader title="Settings" description="Manage site-wide settings and preferences." />
 
-      <Card className="p-6 space-y-4 border-l-4 border-l-primary">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">Maintenance Mode</h3>
-            <p className="text-sm text-muted-foreground mt-1">Toggle site-wide maintenance mode. When enabled, users will see a maintenance notice.</p>
-          </div>
-          <Switch 
-            checked={maintenance} 
-            onCheckedChange={(v) => { setMaintenance(!!v); saveField({ maintenance_mode: !!v }) }}
-            aria-label="Toggle maintenance mode"
-          />
-        </div>
-      </Card>
-
-      <Card className="p-6 space-y-4 border-l-4 border-l-blue-500">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">Featured Image</h3>
-            <p className="text-sm text-muted-foreground mt-1">Select an image to highlight across the site.</p>
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm">{featured ? 'Change' : 'Select'}</Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72">
-              <PopoverHeader>
-                <PopoverTitle>Select Featured Image</PopoverTitle>
-                <PopoverDescription className="text-xs">Search by prompt or ID</PopoverDescription>
-              </PopoverHeader>
-              <div className="space-y-3 pt-4">
-                <Input 
-                  value={query} 
-                  onChange={(e) => setQuery(e.target.value)} 
-                  placeholder="Search images..." 
-                  className="text-sm"
-                />
-                <Command className="rounded-lg border">
-                  <CommandInput 
-                    value={query} 
-                    onValueChange={(v: string) => setQuery(v)}
-                    placeholder="Filter..."
-                  />
-                  <CommandList>
-                    {images.filter((img) => !query || (img.prompt && img.prompt.toLowerCase().includes(query.toLowerCase()))).slice(0, 20).map((img) => (
-                      <CommandItem 
-                        key={img.id} 
-                        onSelect={() => { setFeatured(img.id); saveField({ featured_image_id: img.id }) }}
-                        className="text-sm"
-                      >
-                        {img.prompt || img.id}
-                      </CommandItem>
-                    ))}
-                    {images.filter((img) => !query || (img.prompt && img.prompt.toLowerCase().includes(query.toLowerCase()))).length === 0 && <CommandEmpty>No images found</CommandEmpty>}
-                  </CommandList>
-                </Command>
+      <div className="space-y-6">
+        {/* General Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">General</CardTitle>
+            <CardDescription>Site-wide general settings</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Maintenance Mode */}
+            <div className="flex items-center justify-between py-3 border-b last:border-b-0">
+              <div className="flex-1 space-y-1">
+                <Label className="text-base font-medium">Maintenance Mode</Label>
+                <p className="text-sm text-muted-foreground">
+                  Toggle site-wide maintenance mode. When enabled, users will see a maintenance notice.
+                </p>
               </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-        {featured && (
-          <div className="mt-3 p-3 rounded-lg bg-muted/50">
-            <p className="text-xs text-muted-foreground">Selected image:</p>
-            <Badge className="mt-2 text-xs truncate max-w-xs">{featured}</Badge>
-          </div>
-        )}
-      </Card>
+              <div className="ml-4">
+                <Switch
+                  checked={maintenance}
+                  onCheckedChange={(v) => {
+                    setMaintenance(!!v)
+                    saveField({ maintenance_mode: !!v })
+                  }}
+                  aria-label="Toggle maintenance mode"
+                  disabled={saving}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      <Card className="p-6 space-y-4 border-l-4 border-l-green-500">
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold">Infrastructure</h3>
-            <p className="text-sm text-muted-foreground mt-1">View storage adapter and integration status.</p>
-          </div>
-          <Badge variant="outline" className="font-medium">Supabase</Badge>
-        </div>
-        <Button variant="secondary" size="sm" onClick={async () => { await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ secret: process.env.NEXT_PUBLIC_REVALIDATE_SECRET, tag: 'sitemap' }) }) }}>Revalidate sitemap</Button>
-      </Card>
+        {/* Content Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Content</CardTitle>
+            <CardDescription>Manage featured content and gallery settings</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Featured Image */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-base font-medium">Featured Image</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Select an image to highlight across the site.
+                  </p>
+                </div>
+              </div>
 
-      {loading && <div className="text-sm text-muted-foreground">Loading...</div>}
+              <div className="flex items-center gap-3">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={saving}>
+                      {featured ? 'Change' : 'Select'} Image
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-0">
+                    <div className="space-y-2 p-4">
+                      <h4 className="font-medium text-sm">Select Featured Image</h4>
+                      <p className="text-xs text-muted-foreground">Search by prompt or ID</p>
+                      <Input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search images..."
+                        className="text-sm"
+                      />
+                      <Command className="rounded-lg border">
+                        <CommandInput
+                          value={query}
+                          onValueChange={(v: string) => setQuery(v)}
+                          placeholder="Filter..."
+                        />
+                        <CommandList>
+                          {images
+                            .filter((img) => !query || (img.prompt && img.prompt.toLowerCase().includes(query.toLowerCase())))
+                            .slice(0, 20)
+                            .map((img) => (
+                              <CommandItem
+                                key={img.id}
+                                onSelect={() => {
+                                  setFeatured(img.id)
+                                  saveField({ featured_image_id: img.id })
+                                }}
+                                className="text-sm"
+                              >
+                                {img.prompt || img.id}
+                              </CommandItem>
+                            ))}
+                          {images.filter((img) => !query || (img.prompt && img.prompt.toLowerCase().includes(query.toLowerCase())))
+                            .length === 0 && <CommandEmpty>No images found</CommandEmpty>}
+                        </CommandList>
+                      </Command>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {featured && (
+                  <div className="flex-1">
+                    <Badge variant="secondary" className="text-xs truncate max-w-xs">
+                      {featured}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Infrastructure Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Infrastructure</CardTitle>
+            <CardDescription>Storage and integration settings</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between py-3">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Storage Adapter</Label>
+                <p className="text-sm text-muted-foreground">Current storage service and status</p>
+              </div>
+              <Badge>Supabase</Badge>
+            </div>
+
+            <div className="border-t pt-6">
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Cache & CDN</Label>
+                <p className="text-sm text-muted-foreground">Revalidate site cache and CDN content</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRevalidate}
+                  disabled={saving}
+                  className="mt-2"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Revalidate Sitemap
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </PageContainer>
   )
 }

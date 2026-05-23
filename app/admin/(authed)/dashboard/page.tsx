@@ -70,11 +70,9 @@ export default function DashboardPage() {
         </Suspense>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Suspense fallback={<UploadsSkeleton />}>
-          <RecentUploads />
-        </Suspense>
-      </div>
+      <Suspense fallback={<UploadsSkeleton />}>
+        <RecentUploads />
+      </Suspense>
     </PageContainer>
   )
 }
